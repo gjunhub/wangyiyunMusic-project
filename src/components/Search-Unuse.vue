@@ -6,22 +6,14 @@
                 <span v-for="detail,index in details" :key="index">{{detail}}</span>
             </div>
             <ul id="MusicList">
-                <li v-for="song ,index in SearchListPage" :key="index">
+                <li v-for="song ,index in SearchListPage">
                     <span class="music_nub">{{index + 1 | addZero}}</span>
                     <a href="javascript:;">
-                        <input
-                            type="checkbox"
-                            id="checkbox"
-                            class="checkbox"
-                            @click="doLike(song,index)"
-                            ref="input"
-                        >
-                        <label
-                            id="label"
-                            for="checkbox"
-                            ref="label"
-                            :class="{likeOrNot: isLoging }"
-                        ></label>
+
+                        <!--有繁琐的逻辑-->
+                        <div class="collect" @click="doLike(song,index)">
+                            <span class="unLike" :class="{like:likeOrNot && song.id == likeSongId}"></span>
+                        </div>
                         <i
                             class="playSong"
                             @click="PlaySong(song.id,song.artists[0].img1v1Url,song.name)"
@@ -79,11 +71,12 @@
                 playTotal: 0,//音乐总数
                 count: 30,//一页显示20个
                 likeOrNot: false,//不喜欢就是灰色的爱心，喜欢就是红色的
+                likeSongId: '',
             }
         },
         computed: Object.assign({
             Searchlist() {
-                return this.$store.state.searchList;//搜索的音乐数据
+                return this.$store.state.searchList;
             },
             SearchCount() {
                 return this.$store.state.SearchCount;
@@ -139,30 +132,20 @@
             },
             //喜欢和不喜欢的逻辑
             doLike(song,index) {//将选中的复选框对应数据传到store
+                this.likeOrNot = !this.likeOrNot;
+                this.likeSongId = song.id;
+                if(this.isLoging) {
 
-                if(this.isLoging) {//已登录
-                    console.log(this.$refs.input[index].checked,'index',index);//哈哈有规律
-    /*
-    * 红心亮=(checked=true)，将数据传入
-    * */
-                    if(this.$refs.input[index].checked) {
-                        let userLikeMusic = {
-                            id: song.id,
-                            img: song.artists[0].img1v1Url,
-                            name: song.name,
-                            singer: song.artists[0].name,
-                            time: song.duration,
-                            Index: index
-                        };
-                        this.$store.commit('updateUserLikeMusics',userLikeMusic);
-    /*
-    * 红心灰=(checked=false)，将数据移除
-    * */
-                    } else {
-                        this.$store.commit('removeUserLikeMusics',song.id);
-                    }
+                    let userLikeMusic = {
+                        id: song.id,
+                        img: song.artists[0].img1v1Url,
+                        name: song.name,
+                        singer: song.artists[0].name,
+                        time: song.duration
+                    };
+                    this.$store.commit('updateUserLikeMusics',userLikeMusic);
 
-                } else {//未登录
+                } else {
                     this.LoginElement.$el.childNodes[2].click();//先登录
                     this.$store.commit('updateWindowHref','search');//记录登录前是哪个页面
 
@@ -180,8 +163,7 @@
                         img: song.artists[0].img1v1Url,
                         name: song.name,
                         singer: song.artists[0].name,
-                        time: song.duration,
-                        Index: index
+                        time: song.duration
                     };
                     this.$store.commit('updateUserLikeMusics',userLikeMusic);
                 }
@@ -197,31 +179,6 @@
 //		    console.log(arr[arr.length-1],'asdasd');
         },
         mounted() {
-		    /*
-		    * 点击搜索喜欢按钮的最后一步逻辑:将store中喜欢的歌曲都拿过来和当前用户搜索出来的数据比对
-		    * 如果两者id一致，就将用户喜欢的歌曲的那个index值赋值给页面中
-		    * 已经挂载好的input，用这段代码this.$refs.input[item.Index].click();=>>将搜索的歌
-		    * 和用户喜欢的歌比较一致的，就将搜索后的歌，自动点亮红心，达到视图和我的音乐中的音乐数据
-		    * 一致的结果。----事先将收藏喜欢哪首歌的index存进用户喜欢的数组每一项(暂时没用着)
-		    * --见155&184行
-		    * */
-		    if(this.isLoging && this.userLikeMusics.length != 0) {
-		        this.$store.state.searchList.forEach((ele,index) => {
-                    this.userLikeMusics.forEach(item => {
-                        if(item.id == ele.id) {//用户搜索的数据中歌曲id和用户收藏的歌曲id一致
-                            this.$refs.input[index].click();
-                            /*
-                            * 就将用户搜索的数据中与用户收藏相同id的歌曲红心点亮，达到视图和数据一致
-                            * 的效果---上面this.$refs.input[index].click();不必担心重复添加数据
-                            * --在store中已经进行了重置(添加每一项的大清洗)操作。
-                            * */
-                        }
-                    })
-                })
-            }
-//            console.log(this.$refs.input[0].click(),'989');
-        },
-        updated() {
 
         },
         filters: {
@@ -297,30 +254,35 @@
         border-right: none;
     }
     /*喜欢按钮的表单美化*/
-    #label {
-        display: inline-block;
-        margin: 6px 0 0 0;
-        width: 22px;
-        height: 22px;
+    .unLike {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 23px;
+        height: 23px;
         background: url(../../static/unlike.png) no-repeat;
-        background-size: 22px auto;
+        background-size: 23px auto;
     }
-   .checkbox {
-       opacity: 0;
-       position: absolute;
-       top: 1px;
-       left: 4px;
-       width: 28px;
-       height: 28px;
-    }
-    input:checked+#label.likeOrNot {
+    .like {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 23px;
+        height: 23px;
         background: url(../../static/like.png) no-repeat;
-        background-size: 22px auto;
+        background-size: 23px auto;
+    }
+   .collect {
+       position: absolute;
+       top: 6px;
+       left: 10px;
+       width: 22px;
+       height: 22px;
     }
 
     .playSong {
         display: inline-block;
-        margin: 5px 0 0 12px;
+        margin: 5px 0 0 36px;
         width: 24px;
         height: 24px;
         background-image: url(../image/play.png);
