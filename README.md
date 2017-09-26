@@ -51,7 +51,7 @@ vue,vuex,vue-router,fetch,webpack,Es6的解构赋值,箭头函数
 - [x] 利用vue自定义指令Vue.directive，使用H5新增音频视频功能，自定义编写音乐控制播放器
 
 
-## 项目详情
+## 项目详情--后期还会继续完善
 > 1. 多个页面布局，vue-router跳转
 
 > 2. 搭建好页面并分配好各个组件和跑通整个流程，
@@ -106,4 +106,4 @@ updateNewAlbum({commit}) {
 
 自定义过滤器位于`src/filters/`目录下
 
-时光网接口来源于[https://github.com/Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
+网易云音乐接口来源于[https://github.com/Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
